@@ -8,13 +8,14 @@
     <!-- TODO: Update blank fragment layout -->
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/MainButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/round_btn_on"
-        android:text="@string/main_button"
-        android:layout_marginTop="105dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="105dp"
+        android:background="@drawable/round_btn_on"
+        android:onClick="onClickBT"
+        android:text="@string/main_button" />
 
 </RelativeLayout>

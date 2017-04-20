@@ -1,8 +1,16 @@
 package com.example.marcinwlodarczyk.tabbed;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.UUID;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
+import android.util.Log;
 
-/**
- * Created by marcinwlodarczyk on 20.04.2017.
- */
+import java.io.OutputStream;
+import java.util.UUID;
+
 
 public class bluetoothManager {
     private static final int REQUEST_ENABLE_BT = 1;
@@ -16,26 +24,16 @@ public class bluetoothManager {
     // MAC-адрес Bluetooth модуля
     private static String address = "98:D3:31:FB:4F:0F";
 
-    private void checkBTState() {
-        // Check for Bluetooth support and then check to make sure it is turned on
-        // Emulator doesn't support Bluetooth and will return null
-        if (btAdapter == null) {
-            errorExit("Fatal Error", "Bluetooth не поддерживается");
-        } else {
-            if (btAdapter.isEnabled()) {
-                Log.d(TAG, "...Bluetooth включен...");
-            } else {
-                //Prompt user to turn on Bluetooth
-                Intent enableBtIntent = new Intent(btAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
-        }
+    public bluetoothManager() throws IOException {
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+        btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+        outStream = btSocket.getOutputStream();
+        btSocket.connect();
     }
 
-    private void sendData(String message) {
+    public void sendData(String message) {
         byte[] msgBuffer = message.getBytes();
-
-        Log.d(TAG, "...Посылаем данные: " + message + "...");
 
         try {
             outStream.write(msgBuffer);
@@ -44,8 +42,7 @@ public class bluetoothManager {
             if (address.equals("00:00:00:00:00:00"))
                 msg = msg + ".\n\nВ переменной address у вас прописан 00:00:00:00:00:00, вам необходимо прописать реальный MAC-адрес Bluetooth модуля";
             msg = msg +  ".\n\nПроверьте поддержку SPP UUID: " + MY_UUID.toString() + " на Bluetooth модуле, к которому вы подключаетесь.\n\n";
-
-            errorExit("Fatal Error", msg);
         }
     }
 }
+

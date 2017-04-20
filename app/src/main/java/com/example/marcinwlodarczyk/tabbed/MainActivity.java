@@ -11,15 +11,21 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-  
+
+import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
+
+    bluetoothManager conn;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -35,11 +41,20 @@ public class MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    boolean flag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        try {
+            conn = new bluetoothManager();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -53,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
         /*
       FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
       fab.setOnClickListener(new View.OnClickListener() {
@@ -67,9 +83,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void onClickBT(View v){
+        Log.i("MyActivity","TEST BT TEST TEST TEST TEST");
+
+
+
+        if(!flag) {
+            conn.sendData("1");
+        }else{
+            conn.sendData("0");
+        }
+        flag = !flag;
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -89,8 +120,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    
-  
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -129,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -152,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public PlaceholderFragment() {
+
         }
 
         @Override

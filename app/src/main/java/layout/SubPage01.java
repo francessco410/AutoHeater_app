@@ -1,12 +1,16 @@
+
 package layout;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.marcinwlodarczyk.tabbed.R;
 
@@ -18,11 +22,16 @@ import com.example.marcinwlodarczyk.tabbed.R;
  * Use the {@link SubPage01#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SubPage01 extends Fragment {
+
+
+public class SubPage01 extends Fragment implements View.OnClickListener{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    Button MButton;
+    private static final String TAG = "bluetooth1";
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -43,6 +52,7 @@ public class SubPage01 extends Fragment {
      * @return A new instance of fragment SubPage01.
      */
     // TODO: Rename and change types and number of parameters
+
     public static SubPage01 newInstance(String param1, String param2) {
         SubPage01 fragment = new SubPage01();
         Bundle args = new Bundle();
@@ -51,6 +61,8 @@ public class SubPage01 extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,11 +73,24 @@ public class SubPage01 extends Fragment {
         }
     }
 
+
+    View view;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_sub_page01, container, false);
+        view = inflater.inflate(R.layout.fragment_sub_page01, container, false);
+        MButton = (Button) view.findViewById(R.id.MainButton);
+        MButton.setOnClickListener(this);
+        return view;
+    }
+
+
+
+    @Override
+    public void onClick(View v) {
+        Log.i("MyActivity","MSG");
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -91,6 +116,7 @@ public class SubPage01 extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
 
     /**
      * This interface must be implemented by activities that contain this

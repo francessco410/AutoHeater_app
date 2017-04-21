@@ -1,5 +1,13 @@
 package com.example.marcinwlodarczyk.tabbed;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -22,10 +30,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class MainActivity extends AppCompatActivity {
 
     bluetoothManager conn;
+
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -49,12 +60,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         try {
-            conn = new bluetoothManager();
+            conn = new bluetoothManager(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -68,32 +77,34 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
-        /*
-      FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-      fab.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                      .setAction("Action", null).show();
-          }
-      });
-        */
       
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
 
     public void onClickBT(View v){
-        Log.i("MyActivity","TEST BT TEST TEST TEST TEST");
 
-
-
-        if(!flag) {
-            conn.sendData("1");
+        if(conn.getStatus()){
+            if(!flag) {
+                conn.sendData("1");
+            }else{
+                conn.sendData("0");
+            }
+            flag = !flag;
         }else{
-            conn.sendData("0");
+            conn.connect();
+
+            if(!flag) {
+                conn.sendData("1");
+            }else{
+                conn.sendData("0");
+            }
+            flag = !flag;
         }
-        flag = !flag;
 
     }
 

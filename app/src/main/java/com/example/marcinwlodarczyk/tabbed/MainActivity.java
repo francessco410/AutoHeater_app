@@ -90,9 +90,9 @@ public class MainActivity extends AppCompatActivity {
 
         if(conn.getStatus()){
             if(!flag) {
-                conn.sendData("1");
+                conn.sendData("224");
             }else{
-                conn.sendData("0");
+                conn.sendData("100");
             }
             flag = !flag;
         }else{

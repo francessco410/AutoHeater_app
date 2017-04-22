@@ -1,5 +1,6 @@
 package com.example.marcinwlodarczyk.tabbed;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
@@ -10,19 +11,31 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.OutputStream;
 import java.util.UUID;
+import android.os.Handler;
 
 
 public class bluetoothManager{
+
+    public Handler h;
+    public TextView txtArduino;
+
+    final int RECIEVE_MESSAGE = 1;
+
+    private StringBuilder sb = new StringBuilder();
+    private ConnectedThread mConnectedThread;
+
     private static final int REQUEST_ENABLE_BT = 1;
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private OutputStream outStream = null;
-    public boolean connFlag = false;
     BluetoothDevice device;
+
+
 
     private Activity activityContext = null; // v1
 
@@ -34,6 +47,29 @@ public class bluetoothManager{
 
     public bluetoothManager(Activity activityContext) throws IOException {
         this.activityContext = activityContext;
+        //txtArduino = (TextView) activityContext.findViewById(R.id.txtArduino);
+
+        h = new Handler() {
+            public void handleMessage(android.os.Message msg) {
+                switch (msg.what) {
+                    case RECIEVE_MESSAGE:                                                   // если приняли сообщение в Handler
+                        byte[] readBuf = (byte[]) msg.obj;
+                        String strIncom = new String(readBuf, 0, msg.arg1);
+                        sb.append(strIncom);                                                // формируем строку
+                        int endOfLineIndex = sb.indexOf("\r\n");                            // определяем символы конца строки
+                        if (endOfLineIndex > 0) {                                            // если встречаем конец строки,
+                            String sbprint = sb.substring(0, endOfLineIndex);               // то извлекаем строку
+                            sb.delete(0, sb.length());                                      // и очищаем sb
+                            Log.d("TEST", "ODPOWIEDZ OD ARDUINO: -----> "+ sbprint);
+                            //txtArduino.setText("Ответ от Arduino: " + sbprint);             // обновляем TextView
+
+                        }
+                        //Log.d(TAG, "...Строка:"+ sb.toString() +  "Байт:" + msg.arg1 + "...");
+                        break;
+                }
+            };
+        };
+
         connect();
     }
 
@@ -89,6 +125,9 @@ public class bluetoothManager{
             //errorExit("Fatal Error", "In onResume() and output stream creation failed:" + e.getMessage() + ".");
         }
 
+        this.mConnectedThread = new ConnectedThread(btSocket);
+        this.mConnectedThread.start();
+
     }
 
     public boolean getStatus(){
@@ -101,7 +140,10 @@ public class bluetoothManager{
     }
 
     public void sendData(String message) {
-        byte[] msgBuffer = message.getBytes();
+
+        mConnectedThread.write(message);
+
+        /*byte[] msgBuffer = message.getBytes();
 
         try {
             outStream.write(msgBuffer);
@@ -110,7 +152,7 @@ public class bluetoothManager{
             if (address.equals("00:00:00:00:00:00"))
                 msg = msg + ".\n\nВ переменной address у вас прописан 00:00:00:00:00:00, вам необходимо прописать реальный MAC-адрес Bluetooth модуля";
             msg = msg +  ".\n\nПроверьте поддержку SPP UUID: " + MY_UUID.toString() + " на Bluetooth модуле, к которому вы подключаетесь.\n\n";
-        }
+        }*/
     }
 
     private boolean checkBTState() {
@@ -137,5 +179,64 @@ public class bluetoothManager{
         Toast.makeText(activityContext, title + " - " + message, Toast.LENGTH_LONG).show();
         activityContext.finish();
     }
+
+    private class ConnectedThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket socket) {
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            // Get the input and output streams, using temp objects because
+            // member streams are final
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) { }
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            Log.d("THREAD_RUN", "-------> Thread run() method is called");
+            byte[] buffer = new byte[256];  // buffer store for the stream
+            int bytes; // bytes returned from read()
+
+            // Keep listening to the InputStream until an exception occurs
+            while (true) {
+                try {
+                    // Read from the InputStream
+                    bytes = mmInStream.read(buffer);        // Получаем кол-во байт и само собщение в байтовый массив "buffer"
+                    h.obtainMessage(RECIEVE_MESSAGE, bytes, -1, buffer).sendToTarget();     // Отправляем в очередь сообщений Handler
+                } catch (IOException e) {
+                    break;
+                }
+            }
+        }
+
+        /* Call this from the main activity to send data to the remote device */
+        public void write(String message) {
+            //Log.d(TAG, "...Данные для отправки: " + message + "...");
+            //byte[] msgBuffer = message.getBytes();
+            int msgBuffer = Integer.parseInt(message);
+            try {
+                mmOutStream.write(msgBuffer);
+            } catch (IOException e) {
+                //Log.d(TAG, "...Ошибка отправки данных: " + e.getMessage() + "...");
+            }
+        }
+
+        /* Call this from the main activity to shutdown the connection */
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) { }
+        }
+    }
+
 }
 

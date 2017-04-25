@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.marcinwlodarczyk.tabbed.R;
@@ -81,6 +82,7 @@ public class SubPage01 extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_sub_page01, container, false);
+
         MButton = (Button) view.findViewById(R.id.MainButton);
         MButton.setOnClickListener(this);
         return view;

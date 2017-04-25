@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,8 +37,8 @@ public class bluetoothManager{
     BluetoothDevice device;
 
 
-
     private Activity activityContext = null; // v1
+    private View fragment_01;
 
     // SPP UUID service
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -45,7 +46,7 @@ public class bluetoothManager{
     // MAC - adress
     private static String address = "98:D3:31:FB:4F:0F";
 
-    public bluetoothManager(Activity activityContext) throws IOException {
+    public bluetoothManager(final Activity activityContext) throws IOException {
         this.activityContext = activityContext;
         //txtArduino = (TextView) activityContext.findViewById(R.id.txtArduino);
 
@@ -61,8 +62,12 @@ public class bluetoothManager{
                             String sbprint = sb.substring(0, endOfLineIndex);               // то извлекаем строку
                             sb.delete(0, sb.length());                                      // и очищаем sb
                             Log.d("TEST", "ODPOWIEDZ OD ARDUINO: -----> "+ sbprint);
-                            //txtArduino.setText("Ответ от Arduino: " + sbprint);             // обновляем TextView
+                            if(txtArduino != null) {
+                                //txtArduino = (TextView) fragment_01.findViewById(R.id.txtArduino);
+                                txtArduino.setText(sbprint);
+                            }
 
+                            //txtArduino.setText("Ответ от Arduino: " + sbprint);             // обновляем TextViewtm
                         }
                         //Log.d(TAG, "...Строка:"+ sb.toString() +  "Байт:" + msg.arg1 + "...");
                         break;
@@ -85,6 +90,11 @@ public class bluetoothManager{
 
     public void setActivityContext(Activity activityContext){
         this.activityContext=activityContext;
+    }
+
+    public void setView(TextView v){
+        //fragment_01 = v;
+        txtArduino = v;
     }
 
 

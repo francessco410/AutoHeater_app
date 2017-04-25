@@ -33,9 +33,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static com.example.marcinwlodarczyk.tabbed.R.id.container;
+
 public class MainActivity extends AppCompatActivity {
 
-    bluetoothManager conn;
+    public  static  bluetoothManager conn;
 
 
     /**
@@ -72,25 +74,29 @@ public class MainActivity extends AppCompatActivity {
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager) findViewById(container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-      
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
     }
 
 
     public void onClickBT(View v){
 
+        TextView txtArduino = (TextView)findViewById(R.id.txtArduino);
+        conn.setView(txtArduino);
+
         if(conn.getStatus()){
             if(!flag) {
-                conn.sendData("224");
+                conn.sendData("227");
             }else{
                 conn.sendData("100");
             }
@@ -200,6 +206,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
+
+            View myInflatedView = inflater.inflate(R.layout.fragment_sub_page01, container,false);
+            //conn.setView(myInflatedView);
+
 
             if(getArguments().getInt(ARG_SECTION_NUMBER) == 1)
             {

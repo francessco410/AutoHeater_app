@@ -196,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-//l
         /**
          * Returns a new instance of this fragment for the given section
          * number.

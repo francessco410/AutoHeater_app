@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static com.example.marcinwlodarczyk.tabbed.R.id.container;
+import static com.example.marcinwlodarczyk.tabbed.R.id.txtArduino;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
     boolean flag = false;
+    TextView txtArduino;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +65,15 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             conn = new bluetoothManager(this);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+       // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+       // setSupportActionBar(toolbar);
+
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -77,8 +82,11 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+
 
     }
 
@@ -86,13 +94,15 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
+
     }
 
 
     public void onClickBT(View v){
 
-        TextView txtArduino = (TextView)findViewById(R.id.txtArduino);
+        txtArduino = (TextView)findViewById(R.id.txtArduino);
         conn.setView(txtArduino);
+
 
         if(conn.getStatus()){
             if(!flag) {
@@ -214,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
             if(getArguments().getInt(ARG_SECTION_NUMBER) == 1)
             {
                 View rootView = inflater.inflate(R.layout.fragment_sub_page01, container, false);
+
+
                 return rootView;
             }
             else if(getArguments().getInt(ARG_SECTION_NUMBER) == 2)
@@ -226,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
                 View rootView = inflater.inflate(R.layout.fragment_sub_page03, container, false);
                 return rootView;
             }
+
         }
+
     }
 }

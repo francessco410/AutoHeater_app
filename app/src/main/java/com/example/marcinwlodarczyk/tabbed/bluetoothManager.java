@@ -10,8 +10,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +27,7 @@ public class bluetoothManager{
 
     public Handler h;
     public TextView txtArduino;
+    //public ImageView sts;
 
     final int RECIEVE_MESSAGE = 1;
 
@@ -49,7 +53,8 @@ public class bluetoothManager{
     public bluetoothManager(final Activity activityContext) throws IOException {
         this.activityContext = activityContext;
         //txtArduino = (TextView) activityContext.findViewById(R.id.txtArduino);
-
+//         sts=(ImageView) activityContext.findViewById(R.id.conn_status);
+//         sts.setColorFilter(Color.parseColor("#ff0000"));
         h = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
@@ -65,10 +70,12 @@ public class bluetoothManager{
                             if(txtArduino != null) {
                                 //txtArduino = (TextView) fragment_01.findViewById(R.id.txtArduino);
                                 txtArduino.setText(sbprint);
+
                             }
 
                             //txtArduino.setText("Ответ от Arduino: " + sbprint);             // обновляем TextViewtm
                         }
+
                         //Log.d(TAG, "...Строка:"+ sb.toString() +  "Байт:" + msg.arg1 + "...");
                         break;
                 }

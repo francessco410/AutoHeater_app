@@ -1,19 +1,13 @@
 package com.example.marcinwlodarczyk.tabbed;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
+import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.AsyncTask;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-   
+import android.widget.CompoundButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -27,20 +21,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.Button;
+import android.widget.NumberPicker;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import static com.example.marcinwlodarczyk.tabbed.R.id.container;
-import static com.example.marcinwlodarczyk.tabbed.R.id.txtArduino;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NumberPicker.OnValueChangeListener {
 
-    public  static  bluetoothManager conn;
-
-
+    public static bluetoothManager conn;
+    private static final String TAG = "MyActivity";
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -55,13 +47,18 @@ public class MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    DBHelper dbHelper;
     boolean flag = false;
     TextView txtArduino;
+    static Dialog d;
+    //ImageView staus = (ImageView) findViewById(R.id.conn_status);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+
 
         try {
             conn = new bluetoothManager(this);
@@ -70,8 +67,28 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-       // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-       // setSupportActionBar(toolbar);
+        // устанавливаем переключатель программно в значение ON
+       // mSwitch.setChecked(true);
+        // добавляем слушателя
+//        mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//
+//                                               @Override
+//                                               public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                                                   // в зависимости от значения isChecked выводим нужное сообщение
+//                                                   if (isChecked) {
+//                                                      //dbHelper.update_where("1","temp_bool","id","user","1");
+//                                                       Log.d(TAG,"Switch ON");
+//
+//                                                   } else {
+//                                                      // dbHelper.update_where("0","temp_bool","id","user","1");
+//                                                       Log.d(TAG,"Switch OFF");
+//                                                   }
+//                                               }
+//                                           }
+//    );
+
+        // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        // setSupportActionBar(toolbar);
 
 
         // Create the adapter that will return a fragment for each of the three
@@ -85,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
+        dbHelper = new DBHelper(this);
 
 
     }
@@ -98,31 +115,134 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void onClickBT(View v){
+    public void onClickBT(View v) {
 
-        txtArduino = (TextView)findViewById(R.id.txtArduino);
+        txtArduino = (TextView) findViewById(R.id.txtArduino);
         conn.setView(txtArduino);
+        if (v.getId() == R.id.manual_con) {
+            try {
+                conn = new bluetoothManager(this);
 
-
-        if(conn.getStatus()){
-            if(!flag) {
-                conn.sendData("227");
-            }else{
-                conn.sendData("100");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            flag = !flag;
-        }else{
-            conn.connect();
 
-            if(!flag) {
-                conn.sendData("1");
-            }else{
-                conn.sendData("0");
+        }
+        if (v.getId() == R.id.MainButton) {
+            if (conn.getStatus()) {
+                if (!flag) {
+                    conn.sendData("227");
+                } else {
+                    conn.sendData("100");
+                }
+                flag = !flag;
+            } else {
+                conn.connect();
+
+                if (!flag) {
+                    conn.sendData("1");
+                } else {
+                    conn.sendData("0");
+                }
+                flag = !flag;
             }
-            flag = !flag;
         }
 
     }
+
+    public void onClickInsert(View v) {
+        String [][] str = {{"date","20 jun"},{"time","25"},{"temperature","18"}};
+        String [][] str1 = {{"name","User1"},{"temp_bool","0"},{"temp","0"},{"time_bool","0"},{"time","0"}};
+        dbHelper.insert(str,"statistic");
+        dbHelper.insert(str1,"user");
+
+    }
+
+    public void onClickPref(View v) {
+        final Dialog d = new Dialog(MainActivity.this);
+
+        d.setContentView(R.layout.dialog);
+        Button b1 = (Button) d.findViewById(R.id.button1);
+        Button b2 = (Button) d.findViewById(R.id.button2);
+        final TextView temmpp;
+
+        final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker1);
+        switch (v.getId()) {
+            case R.id.btn_temp:
+                d.setTitle("Set Temperature");
+                temmpp = (TextView) findViewById(R.id.temper);
+                np.setMaxValue(33);
+                np.setMinValue(10);
+                try {
+
+                    String path = temmpp.getText().toString();
+                    String s[] = path.split(" ");
+                    String result = s[0];
+                    np.setValue(Integer.parseInt(result));
+                } catch (Throwable cause) {
+                    np.setValue(18);
+                }
+                np.setWrapSelectorWheel(false);
+                np.setOnValueChangedListener(this);
+                b1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        temmpp.setText(String.valueOf(np.getValue()) + " °C");
+                        dbHelper.update_where(String.valueOf(np.getValue()),"temp","id","user","1");
+                        //tv.setText(String.valueOf(np.getValue()));
+                        d.dismiss();
+                    }
+                });
+                b2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        d.dismiss();
+                    }
+                });
+                break;
+
+
+            case R.id.btn_time:
+                d.setTitle("Set Time");
+                temmpp = (TextView) findViewById(R.id.timeb);
+                np.setMaxValue(90);
+                np.setMinValue(5);
+                try {
+                    String path = temmpp.getText().toString();
+                    String s[] = path.split(" ");
+                    String result = s[0];
+                    np.setValue(Integer.parseInt(result));
+                } catch (Throwable cause) {
+                    np.setValue(45);
+                }
+
+                np.setWrapSelectorWheel(false);
+                np.setOnValueChangedListener(this);
+                b1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        temmpp.setText(String.valueOf(np.getValue()) + " m.");
+                        dbHelper.update_where(String.valueOf(np.getValue()),"time","id","user","1");
+                        //tv.setText(String.valueOf(np.getValue()));
+                        d.dismiss();
+                    }
+                });
+                b2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        d.dismiss();
+                    }
+                });
+                break;
+
+        }
+
+        d.show();
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -147,6 +267,10 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+        Log.i("value is", "" + newVal);
+    }
 
 
     /**
@@ -176,11 +300,11 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Heater";
-                case 1:
-                    return "Preferences";
-                case 2:
                     return "Statistics";
+                case 1:
+                    return "Heater";
+                case 2:
+                    return "Preferences";
             }
             return null;
         }
@@ -196,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
+
         /**
          * Returns a new instance of this fragment for the given section
          * number.
@@ -214,26 +339,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
+                                 Bundle savedInstanceState) {
 
-            View myInflatedView = inflater.inflate(R.layout.fragment_sub_page01, container,false);
+            View myInflatedView = inflater.inflate(R.layout.fragment_sub_page02, container, false);
             //conn.setView(myInflatedView);
 
 
-            if(getArguments().getInt(ARG_SECTION_NUMBER) == 1)
-            {
+            if (getArguments().getInt(ARG_SECTION_NUMBER) == 1) {
                 View rootView = inflater.inflate(R.layout.fragment_sub_page01, container, false);
-
-
                 return rootView;
-            }
-            else if(getArguments().getInt(ARG_SECTION_NUMBER) == 2)
-            {
+            } else if (getArguments().getInt(ARG_SECTION_NUMBER) == 2) {
+
                 View rootView = inflater.inflate(R.layout.fragment_sub_page02, container, false);
                 return rootView;
-            }
-            else
-            {
+            } else {
                 View rootView = inflater.inflate(R.layout.fragment_sub_page03, container, false);
                 return rootView;
             }
@@ -241,4 +360,89 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    class DBHelper extends SQLiteOpenHelper {
+
+        public DBHelper(Context context) {
+            // конструктор суперкласса
+            super(context, "myDB", null, 1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            // создаем таблицу с полями
+            Log.d(TAG, "--- onCreate database ---");
+            // создаем таблицу с полями
+
+            db.execSQL("create table  statistic ("
+                    + "id integer primary key autoincrement,"
+                    + "date text,"
+                    + "time text,"
+                    + "temperature text"
+                    + ");");
+
+            db.execSQL("create table  image ("
+                    + "id integer primary key autoincrement,"
+                    + "name text,"
+                    + "source text"
+                    + ");");
+            db.execSQL("create table if not exists user ("
+                    + "id integer primary key autoincrement,"
+                    + "name text,"
+                    + "temp_bool integer,"
+                    + "temp text,"
+                    + "time_bool integer,"
+                    + "time text,"
+                    + "image integer"
+//                    + "foreign key (image) references image(id)"
+                    + ");");
+
+        }
+        public void insert(String[][] params,String table)
+        {
+            ContentValues cv = new ContentValues();
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            Log.d(TAG, "--- Insert in mytable: ---");
+            for(int i=0; i<params.length;i++) {
+                cv.put(params[i][0], params[i][1]);
+            }
+
+
+            long rowID = db.insert(table, null, cv);
+            Log.d(TAG, "row inserted, ID = " + rowID);
+            //       dbHelper.test_insert(db);
+            //  int clearCount = db.delete("mytable", null, null);
+            ;
+            dbHelper.close();
+        }
+
+//        public void test_insert(SQLiteDatabase db)
+//        {
+//            ContentValues cv = new ContentValues();
+////            cv.put("name","User 1");
+////            cv.put("temp_bool",0);
+////            cv.put("temp",25);
+////            cv.put("time_bool",0);
+////            cv.put("time",20);
+//            cv.put("name","photo1");
+//            cv.put("source","mat/ter/it");
+//            db.insert("image",null,cv);
+//        }
+
+        public void update_where(String new_value, String params, String where,String database,String current)
+        {
+            ContentValues cv = new ContentValues();
+            cv.put(params,new_value);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            db.update(database,cv,where + "=" + current,null);
+            dbHelper.close();
+            Log.d(TAG,"Molodec:)");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        }
+    }
 }
+

@@ -10,8 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import com.example.marcinwlodarczyk.tabbed.R;
 
@@ -25,18 +25,17 @@ import com.example.marcinwlodarczyk.tabbed.R;
  */
 
 
-public class SubPage01 extends Fragment implements View.OnClickListener{
+public class SubPage01 extends Fragment implements View.OnClickListener,CompoundButton.OnCheckedChangeListener{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     Button MButton;
     private static final String TAG = "bluetooth1";
-
+    Switch mSwitch;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
     private OnFragmentInteractionListener mListener;
 
     public SubPage01() {
@@ -64,13 +63,16 @@ public class SubPage01 extends Fragment implements View.OnClickListener{
 
 
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
 
@@ -81,6 +83,11 @@ public class SubPage01 extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_sub_page01, container, false);
+        mSwitch = (Switch) view.findViewById(R.id.switch_temp);
+        mSwitch.setChecked(true);
+        if (mSwitch != null) {
+            mSwitch.setOnCheckedChangeListener(this);
+        }
 
         MButton = (Button) view.findViewById(R.id.MainButton);
         MButton.setOnClickListener(this);
@@ -116,6 +123,11 @@ public class SubPage01 extends Fragment implements View.OnClickListener{
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        Log.d(TAG,"Switch ON");
     }
 
 

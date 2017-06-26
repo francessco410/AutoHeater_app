@@ -1,26 +1,19 @@
 package com.example.marcinwlodarczyk.tabbed;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.UUID;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
-import android.os.Handler;
 
 
 public class bluetoothManager{
@@ -55,6 +48,7 @@ public class bluetoothManager{
         //txtArduino = (TextView) activityContext.findViewById(R.id.txtArduino);
 //         sts=(ImageView) activityContext.findViewById(R.id.conn_status);
 //         sts.setColorFilter(Color.parseColor("#ff0000"));
+        connect();
         h = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
@@ -82,7 +76,7 @@ public class bluetoothManager{
             };
         };
 
-        connect();
+
     }
 
     public bluetoothManager() throws IOException {

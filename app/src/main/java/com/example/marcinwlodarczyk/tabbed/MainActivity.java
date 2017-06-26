@@ -1,31 +1,29 @@
 package com.example.marcinwlodarczyk.tabbed;
 
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.CompoundButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.Button;
 import android.widget.NumberPicker;
-import android.widget.Switch;
 import android.widget.TextView;
-
-import java.io.IOException;
+import android.widget.Toast;
 
 import static com.example.marcinwlodarczyk.tabbed.R.id.container;
 
@@ -51,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements NumberPicker.OnVa
     boolean flag = false;
     TextView txtArduino;
     static Dialog d;
+    private BluetoothAdapter myBluetooth = null;
     //ImageView staus = (ImageView) findViewById(R.id.conn_status);
 
     @Override
@@ -60,12 +59,12 @@ public class MainActivity extends AppCompatActivity implements NumberPicker.OnVa
         setContentView(R.layout.activity_main);
 
 
-        try {
-            conn = new bluetoothManager(this);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            conn = new bluetoothManager(this);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         // устанавливаем переключатель программно в значение ON
        // mSwitch.setChecked(true);
@@ -98,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements NumberPicker.OnVa
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        premissions();
+
+
+
 
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -113,40 +116,43 @@ public class MainActivity extends AppCompatActivity implements NumberPicker.OnVa
 
 
     }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, getIntent());
+        if(resultCode==RESULT_OK && requestCode==1){
+            new bluetooth_atask_conn().execute(); //Call the class to connect;
+        }
+        else{
+            Log.d("TAG","DENY");
+        }
+    }
 
 
     public void onClickBT(View v) {
-
+        premissions();
         txtArduino = (TextView) findViewById(R.id.txtArduino);
-        conn.setView(txtArduino);
+        //conn.setView(txtArduino);
         if (v.getId() == R.id.manual_con) {
-            try {
-                conn = new bluetoothManager(this);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            new bluetooth_atask_conn().execute(); //Call the class to connect;
         }
-        if (v.getId() == R.id.MainButton) {
-            if (conn.getStatus()) {
-                if (!flag) {
-                    conn.sendData("227");
-                } else {
-                    conn.sendData("100");
-                }
-                flag = !flag;
-            } else {
-                conn.connect();
-
-                if (!flag) {
-                    conn.sendData("1");
-                } else {
-                    conn.sendData("0");
-                }
-                flag = !flag;
-            }
-        }
+//        if (v.getId() == R.id.MainButton) {
+//            if (conn.getStatus()) {
+//                if (!flag) {
+//                    conn.sendData("227");
+//                } else {
+//                    conn.sendData("100");
+//                }
+//                flag = !flag;
+//            } else {
+//                conn.connect();
+//
+//                if (!flag) {
+//                    conn.sendData("1");
+//                } else {
+//                    conn.sendData("0");
+//                }
+//                flag = !flag;
+//            }
+//        }
 
     }
 
@@ -250,6 +256,23 @@ public class MainActivity extends AppCompatActivity implements NumberPicker.OnVa
 
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+    public void premissions(){
+        myBluetooth = BluetoothAdapter.getDefaultAdapter();
+        if(myBluetooth == null)
+        {
+            //Show a mensag. that the device has no bluetooth adapter
+            Toast.makeText(getApplicationContext(), "Bluetooth Device Not Available", Toast.LENGTH_LONG).show();
+
+            //finish apk
+            finish();
+        }
+        else if(!myBluetooth.isEnabled())
+        {
+            //Ask to the user turn the bluetooth on
+            Intent turnBTon = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(turnBTon,1);
+        }
     }
 
     @Override
